@@ -27,3 +27,23 @@ class HTMLNode:
 
     def __repr__(self) -> str:
         return f"HTMLNode: \ntag={self.tag},\nvalue={self.value},\nchildren{self.children},\nprops{self.props}\n"
+
+
+class LeafNode(HTMLNode):
+    def __init__(
+        self,
+        tag: str | None,
+        value: str,
+        props: dict[str, str] | None = None
+    ) -> None:
+        super().__init__(tag=tag, value=value, props=props)
+
+    def to_html(self):
+        if self.value == None:
+            raise ValueError("All leaf nodes must have a value")
+        if self.tag == None:
+            return self.value
+        return f"<{self.tag}>{self.value}</{self.tag}>"
+
+    def __repr__(self) -> str:
+        return f"HTMLNode: \ntag={self.tag},\nvalue={self.value},\nprops{self.props}\n"

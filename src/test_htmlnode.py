@@ -1,6 +1,6 @@
 import unittest
 
-from htmlnode import HTMLNode
+from htmlnode import HTMLNode, LeafNode
 
 
 class TestHTMLNode(unittest.TestCase):
@@ -45,6 +45,47 @@ class TestHTMLNode(unittest.TestCase):
     # __repr__
     def test_repr(self):
         node = HTMLNode("p", "hello", None, {"class": "intro"})
+        result = repr(node)
+        self.assertIn("p", result)
+        self.assertIn("hello", result)
+        self.assertIn("intro", result)
+
+
+if __name__ == "__main__":
+    unittest.main()
+
+
+class TestLeafNode(unittest.TestCase):
+    # __init__
+    def test_no_children(self):
+        node = LeafNode("p", "hello")
+        self.assertIsNone(node.children)
+
+    def test_default_props_none(self):
+        node = LeafNode("p", "hello")
+        self.assertIsNone(node.props)
+
+    def test_props_set(self):
+        node = LeafNode("a", "click", {"href": "https://example.com"})
+        self.assertEqual(node.props, {"href": "https://example.com"})
+
+    # to_html
+    def test_to_html_no_tag(self):
+        node = LeafNode(None, "raw text")
+        self.assertEqual(node.to_html(), "raw text")
+
+    def test_to_html_with_tag(self):
+        node = LeafNode("p", "hello")
+        self.assertEqual(node.to_html(), "<p>hello</p>")
+
+    def test_to_html_no_value_raises(self):
+        node = LeafNode("p", None)  # type: ignore
+        with self.assertRaises(ValueError):
+            node.to_html()
+
+    # __repr__
+    def test_repr(self):
+        node = LeafNode("p", "hello", {"class": "intro"})
         result = repr(node)
         self.assertIn("p", result)
         self.assertIn("hello", result)
