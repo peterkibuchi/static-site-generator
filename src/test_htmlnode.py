@@ -78,6 +78,11 @@ class TestLeafNode(unittest.TestCase):
         node = LeafNode("p", "hello")
         self.assertEqual(node.to_html(), "<p>hello</p>")
 
+    def test_to_html_with_props(self):
+        node = LeafNode("a", "click", {"href": "https://example.com"})
+        self.assertEqual(
+            node.to_html(), '<a href="https://example.com">click</a>')
+
     def test_to_html_no_value_raises(self):
         node = LeafNode("p", None)  # type: ignore
         with self.assertRaises(ValueError):

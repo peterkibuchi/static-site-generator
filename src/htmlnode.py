@@ -26,7 +26,7 @@ class HTMLNode:
         return final
 
     def __repr__(self) -> str:
-        return f"HTMLNode: \ntag={self.tag},\nvalue={self.value},\nchildren{self.children},\nprops{self.props}\n"
+        return f"HTMLNode: \ntag={self.tag},\nvalue={self.value},\nchildren={self.children},\nprops={self.props}\n"
 
 
 class LeafNode(HTMLNode):
@@ -36,14 +36,14 @@ class LeafNode(HTMLNode):
         value: str,
         props: dict[str, str] | None = None
     ) -> None:
-        super().__init__(tag=tag, value=value, props=props)
+        super().__init__(tag, value, None, props)
 
     def to_html(self):
         if self.value == None:
-            raise ValueError("All leaf nodes must have a value")
+            raise ValueError("invalid HTML: all leaf nodes must have a value")
         if self.tag == None:
             return self.value
-        return f"<{self.tag}>{self.value}</{self.tag}>"
+        return f"<{self.tag}{self.props_to_html()}>{self.value}</{self.tag}>"
 
     def __repr__(self) -> str:
-        return f"HTMLNode: \ntag={self.tag},\nvalue={self.value},\nprops{self.props}\n"
+        return f"HTMLNode: \ntag={self.tag},\nvalue={self.value},\nprops={self.props}\n"
