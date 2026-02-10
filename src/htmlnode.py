@@ -6,7 +6,7 @@ class HTMLNode:
         self,
         tag: str | None = None,
         value: str | None = None,
-        children: list[HTMLNode] | None = None,
+        children: list[ParentNode | LeafNode] | None = None,
         props: dict[str, str] | None = None
     ) -> None:
         self.tag = tag
@@ -44,6 +44,30 @@ class LeafNode(HTMLNode):
         if self.tag == None:
             return self.value
         return f"<{self.tag}{self.props_to_html()}>{self.value}</{self.tag}>"
+
+    def __repr__(self) -> str:
+        return f"HTMLNode: \ntag={self.tag},\nvalue={self.value},\nprops={self.props}\n"
+
+
+class ParentNode(HTMLNode):
+    def __init__(
+        self,
+        tag: str,
+        children: list[ParentNode | LeafNode],
+        props: dict[str, str] | None = None
+    ) -> None:
+        super().__init__(tag, None, children, props)
+
+    def to_html(self):
+        if self.tag == None:
+            raise ValueError("invalid HTML: all parent nodes must have a tag")
+        if self.children == None:
+            raise ValueError(
+                "invalid HTML: all parent nodes must have child nodes")
+        child_html = ""
+        for child in self.children:
+            child_html += child.to_html()
+        return f"<{self.tag}{self.props_to_html()}>{child_html}</{self.tag}>"
 
     def __repr__(self) -> str:
         return f"HTMLNode: \ntag={self.tag},\nvalue={self.value},\nprops={self.props}\n"
