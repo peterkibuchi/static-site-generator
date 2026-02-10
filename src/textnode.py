@@ -21,6 +21,8 @@ class TextNode:
         self.text_type = text_type
         self.url = url
 
+    # Accepts `object` to match the base class signature;
+    # gracefully returns False for non-TextNode comparisons
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, TextNode):
             return False

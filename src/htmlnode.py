@@ -1,3 +1,5 @@
+# Defers evaluation of type hints so forward references
+# (e.g. ParentNode | LeafNode in HTMLNode) resolve correctly
 from __future__ import annotations
 
 
@@ -18,6 +20,8 @@ class HTMLNode:
         raise NotImplementedError()
 
     def props_to_html(self):
+        # Each attribute is prefixed with a space so the result
+        # can be inserted directly after the tag name: <tag {props}>
         final = ""
         if self.props == None:
             return final
@@ -64,6 +68,7 @@ class ParentNode(HTMLNode):
         if self.children == None:
             raise ValueError(
                 "invalid HTML: all parent nodes must have child nodes")
+        # Recursively render children — supports arbitrary nesting of ParentNode and LeafNode
         child_html = ""
         for child in self.children:
             child_html += child.to_html()
