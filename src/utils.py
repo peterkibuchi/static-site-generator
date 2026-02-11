@@ -144,3 +144,16 @@ def split_nodes_link(old_nodes: list[TextNode]):
             new_nodes.append(TextNode(rest_of_str, TextType.TEXT))
 
     return new_nodes
+
+
+def text_to_textnodes(text: str):
+    # Process delimiters first so inline formatting inside link/image
+    # text (e.g. [**bold**](url)) is resolved before those nodes
+    # get locked into LINK/IMAGE types
+    nodes = [TextNode(text, TextType.TEXT)]
+    nodes = split_nodes_delimiter(nodes, "**", TextType.BOLD)
+    nodes = split_nodes_delimiter(nodes, "_", TextType.ITALIC)
+    nodes = split_nodes_delimiter(nodes, "`", TextType.CODE)
+    nodes = split_nodes_image(nodes)
+    nodes = split_nodes_link(nodes)
+    return nodes

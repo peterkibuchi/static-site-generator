@@ -2,7 +2,7 @@ import unittest
 
 from htmlnode import LeafNode
 from textnode import TextNode, TextType
-from utils import text_node_to_html_node, split_nodes_delimiter, extract_markdown_images, extract_markdown_links, split_nodes_image, split_nodes_link
+from utils import text_node_to_html_node, split_nodes_delimiter, extract_markdown_images, extract_markdown_links, split_nodes_image, split_nodes_link, text_to_textnodes
 
 
 class TestTextNodeToHTMLNode(unittest.TestCase):
@@ -318,6 +318,68 @@ class TestSplitNodesLink(unittest.TestCase):
             TextNode("see ", TextType.TEXT),
             TextNode("click", TextType.LINK, "https://a.com"),
             TextNode("bold", TextType.BOLD),
+        ])
+
+
+class TestTextToTextnodes(unittest.TestCase):
+    def test_plain_text(self):
+        nodes = text_to_textnodes("just plain text")
+        self.assertEqual(nodes, [TextNode("just plain text", TextType.TEXT)])
+
+    def test_bold(self):
+        nodes = text_to_textnodes("hello **bold** world")
+        self.assertEqual(nodes, [
+            TextNode("hello ", TextType.TEXT),
+            TextNode("bold", TextType.BOLD),
+            TextNode(" world", TextType.TEXT),
+        ])
+
+    def test_italic(self):
+        nodes = text_to_textnodes("hello _italic_ world")
+        self.assertEqual(nodes, [
+            TextNode("hello ", TextType.TEXT),
+            TextNode("italic", TextType.ITALIC),
+            TextNode(" world", TextType.TEXT),
+        ])
+
+    def test_code(self):
+        nodes = text_to_textnodes("hello `code` world")
+        self.assertEqual(nodes, [
+            TextNode("hello ", TextType.TEXT),
+            TextNode("code", TextType.CODE),
+            TextNode(" world", TextType.TEXT),
+        ])
+
+    def test_image(self):
+        nodes = text_to_textnodes("see ![alt](https://img.com/a.png) here")
+        self.assertEqual(nodes, [
+            TextNode("see ", TextType.TEXT),
+            TextNode("alt", TextType.IMAGE, "https://img.com/a.png"),
+            TextNode(" here", TextType.TEXT),
+        ])
+
+    def test_link(self):
+        nodes = text_to_textnodes("see [click](https://example.com) here")
+        self.assertEqual(nodes, [
+            TextNode("see ", TextType.TEXT),
+            TextNode("click", TextType.LINK, "https://example.com"),
+            TextNode(" here", TextType.TEXT),
+        ])
+
+    def test_all_types(self):
+        text = "This is **bold** and _italic_ and `code` and ![img](https://i.com/a.png) and [link](https://example.com)"
+        nodes = text_to_textnodes(text)
+        self.assertEqual(nodes, [
+            TextNode("This is ", TextType.TEXT),
+            TextNode("bold", TextType.BOLD),
+            TextNode(" and ", TextType.TEXT),
+            TextNode("italic", TextType.ITALIC),
+            TextNode(" and ", TextType.TEXT),
+            TextNode("code", TextType.CODE),
+            TextNode(" and ", TextType.TEXT),
+            TextNode("img", TextType.IMAGE, "https://i.com/a.png"),
+            TextNode(" and ", TextType.TEXT),
+            TextNode("link", TextType.LINK, "https://example.com"),
         ])
 
 
