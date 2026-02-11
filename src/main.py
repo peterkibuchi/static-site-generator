@@ -1,5 +1,5 @@
 from textnode import TextNode, TextType
-from utils import split_nodes_image
+from inline_markdown import split_nodes_image
 
 
 def main():
