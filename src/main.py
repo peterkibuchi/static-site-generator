@@ -1,14 +1,14 @@
 from textnode import TextNode, TextType
-from htmlnode import HTMLNode, LeafNode
+from utils import split_nodes_image
 
 
 def main():
-    textnode = TextNode("42", TextType.LINK, "https://boot.dev")
-    htmlnode = HTMLNode("p", "text", None, {"class": "main"})
-    leafnode = LeafNode("a", "click me", {"href": "https://example.com"})
-    print(textnode, "\n")
-    print(htmlnode)
-    print(leafnode)
+    node = TextNode(
+        "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png) and another ![second image](https://i.imgur.com/3elNhQu.png)",
+        TextType.TEXT,
+    )
+    print(f"split_nodes_image node:", node)
+    print(f"split_nodes_image result:", split_nodes_image([node]))
 
 
 if __name__ == "__main__":

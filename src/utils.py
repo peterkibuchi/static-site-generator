@@ -38,6 +38,8 @@ def split_nodes_delimiter(
     new_nodes: list[TextNode] = []
 
     for node in old_nodes:
+        # Non-TEXT nodes (e.g. BOLD, LINK) are already typed —
+        # pass them through without processing their text
         if node.text_type is not TextType.TEXT:
             new_nodes.append(node)
             continue
@@ -74,3 +76,71 @@ def extract_markdown_links(text: str) -> list[tuple[str, str]]:
     # image syntax ![alt](url) is not matched as a link
     # Returns a list of tuples where each tuple is (anchor_text, link_url).
     return re.findall(r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
+
+
+def split_nodes_image(old_nodes: list[TextNode]):
+    new_nodes: list[TextNode] = []
+
+    for node in old_nodes:
+        # Non-TEXT nodes are already typed — pass them through unchanged
+        if node.text_type is not TextType.TEXT:
+            new_nodes.append(node)
+            continue
+
+        images = extract_markdown_images(node.text)
+        if len(images) == 0:
+            new_nodes.append(node)
+            continue
+
+        rest_of_str: str = node.text
+
+        for img_alt, img_url in images:
+            # Progressively split the text around each image match,
+            # carrying forward the remainder after each split
+            parts = rest_of_str.split(f"![{img_alt}]({img_url})", 1)
+            left_str, rest_of_str = parts[0], parts[1]
+
+            # Only append TextNodes with text to the final list
+            if left_str != "":
+                new_nodes.append(TextNode(left_str, TextType.TEXT))
+            new_nodes.append(TextNode(img_alt, TextType.IMAGE, img_url))
+
+        # Append the remaining part after processing all the images, provided it's non-empty
+        if rest_of_str != "":
+            new_nodes.append(TextNode(rest_of_str, TextType.TEXT))
+
+    return new_nodes
+
+
+def split_nodes_link(old_nodes: list[TextNode]):
+    new_nodes: list[TextNode] = []
+
+    for node in old_nodes:
+        # Non-TEXT nodes are already typed — pass them through unchanged
+        if node.text_type is not TextType.TEXT:
+            new_nodes.append(node)
+            continue
+
+        links = extract_markdown_links(node.text)
+        if len(links) == 0:
+            new_nodes.append(node)
+            continue
+
+        rest_of_str: str = node.text
+
+        for link_text, link_url in links:
+            # Progressively split the text around each link match,
+            # carrying forward the remainder after each split
+            parts = rest_of_str.split(f"[{link_text}]({link_url})", 1)
+            left_str, rest_of_str = parts[0], parts[1]
+
+            # Only append TextNodes with text to the final list
+            if left_str != "":
+                new_nodes.append(TextNode(left_str, TextType.TEXT))
+            new_nodes.append(TextNode(link_text, TextType.LINK, link_url))
+
+        # Append the remaining part after processing all the images, provided it's non-empty
+        if rest_of_str != "":
+            new_nodes.append(TextNode(rest_of_str, TextType.TEXT))
+
+    return new_nodes
