@@ -2,7 +2,7 @@ import unittest
 
 from htmlnode import LeafNode
 from textnode import TextNode, TextType
-from utils import text_node_to_html_node, split_nodes_delimiter
+from utils import text_node_to_html_node, split_nodes_delimiter, extract_markdown_images, extract_markdown_links
 
 
 class TestTextNodeToHTMLNode(unittest.TestCase):
@@ -150,6 +150,63 @@ class TestSplitNodesDelimiter(unittest.TestCase):
         with self.assertRaises(Exception):
             split_nodes_delimiter(
                 [TextNode("hello **world", TextType.TEXT)], "**", TextType.BOLD)
+
+
+class TestExtractMarkdownImages(unittest.TestCase):
+    def test_single_image(self):
+        result = extract_markdown_images("![alt](https://example.com/img.png)")
+        self.assertEqual(result, [("alt", "https://example.com/img.png")])
+
+    def test_multiple_images(self):
+        result = extract_markdown_images(
+            "![one](https://a.com/1.png) and ![two](https://b.com/2.png)")
+        self.assertEqual(result, [
+            ("one", "https://a.com/1.png"),
+            ("two", "https://b.com/2.png"),
+        ])
+
+    def test_no_images(self):
+        result = extract_markdown_images("just plain text")
+        self.assertEqual(result, [])
+
+    def test_does_not_match_links(self):
+        result = extract_markdown_images("[click](https://example.com)")
+        self.assertEqual(result, [])
+
+    def test_empty_alt(self):
+        result = extract_markdown_images("![](https://example.com/img.png)")
+        self.assertEqual(result, [("", "https://example.com/img.png")])
+
+
+class TestExtractMarkdownLinks(unittest.TestCase):
+    def test_single_link(self):
+        result = extract_markdown_links("[click](https://example.com)")
+        self.assertEqual(result, [("click", "https://example.com")])
+
+    def test_multiple_links(self):
+        result = extract_markdown_links(
+            "[one](https://a.com) and [two](https://b.com)")
+        self.assertEqual(result, [
+            ("one", "https://a.com"),
+            ("two", "https://b.com"),
+        ])
+
+    def test_no_links(self):
+        result = extract_markdown_links("just plain text")
+        self.assertEqual(result, [])
+
+    def test_does_not_match_images(self):
+        result = extract_markdown_links("![alt](https://example.com/img.png)")
+        self.assertEqual(result, [])
+
+    def test_link_and_image_mixed(self):
+        result = extract_markdown_links(
+            "[click](https://a.com) and ![alt](https://b.com/img.png)")
+        self.assertEqual(result, [("click", "https://a.com")])
+
+    def test_empty_text(self):
+        result = extract_markdown_links("[](https://example.com)")
+        self.assertEqual(result, [("", "https://example.com")])
 
 
 if __name__ == "__main__":

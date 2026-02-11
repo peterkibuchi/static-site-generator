@@ -1,3 +1,4 @@
+import re
 from typing import Literal
 
 from htmlnode import LeafNode
@@ -59,3 +60,17 @@ def split_nodes_delimiter(
                 new_nodes.append(TextNode(part, text_type))
 
     return new_nodes
+
+
+def extract_markdown_images(text: str) -> list[tuple[str, str]]:
+    # Matches ![alt](url) — brackets/parens inside alt or url are excluded
+    # to prevent greedy over-matching across multiple images.
+    # Returns a list of tuples where each tuple is (alt_text, image_url).
+    return re.findall(r"!\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
+
+
+def extract_markdown_links(text: str) -> list[tuple[str, str]]:
+    # Matches [text](url) — the negative lookbehind (?<!!) ensures
+    # image syntax ![alt](url) is not matched as a link
+    # Returns a list of tuples where each tuple is (anchor_text, link_url).
+    return re.findall(r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
