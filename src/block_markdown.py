@@ -1,6 +1,10 @@
 import re
 from enum import Enum
 
+from htmlnode import HTMLNode, LeafNode, ParentNode
+from inline_markdown import text_to_textnodes
+from textnode import TextNode, text_node_to_html_node
+
 
 class BlockType(Enum):
     PARAGRAPH = "paragraph"
@@ -46,3 +50,63 @@ def block_to_block_type(block: str) -> BlockType:
 
     # 6. Default: Paragraph
     return BlockType.PARAGRAPH
+
+
+def markdown_to_html_node(markdown: str):
+    blocks = markdown_to_blocks(markdown)
+    child_nodes: list[ParentNode | LeafNode] = []
+
+    for block in blocks:
+        block_type = block_to_block_type(block)
+
+        match block_type:
+            case BlockType.PARAGRAPH:
+                node = ParentNode("p", text_to_children(block))
+                child_nodes.append(node)
+
+            case BlockType.HEADING:
+                # Count leading # characters to determine heading level
+                level = len(block) - len(block.lstrip("#"))
+                text = block[level + 1:]
+                node = ParentNode(f"h{level}", text_to_children(text))
+                child_nodes.append(node)
+
+            case BlockType.CODE:
+                # Strip the opening and closing ``` lines
+                inner = block.removeprefix("```").removesuffix("```").strip()
+                node = ParentNode("pre", [LeafNode("code", inner)])
+                child_nodes.append(node)
+
+            case BlockType.QUOTE:
+                lines = block.split("\n")
+                content = "\n".join(
+                    l.removeprefix(">").lstrip(" ") for l in lines
+                )
+                node = ParentNode("blockquote", text_to_children(content))
+                child_nodes.append(node)
+
+            case BlockType.ORDERED_LIST:
+                lines = block.split("\n")
+                # Each line becomes an <li> with its own inline formatting
+                new_lines = [re.sub(r"^\d+\.\s", "", l) for l in lines]
+                node = ParentNode(
+                    "ol", [ParentNode("li", text_to_children(l)) for l in new_lines])
+                child_nodes.append(node)
+
+            case BlockType.UNORDERED_LIST:
+                lines = block.split("\n")
+                # Each line becomes an <li> with its own inline formatting
+                new_lines = [l.removeprefix("- ") for l in lines]
+                node = ParentNode(
+                    "ul", [ParentNode("li", text_to_children(l)) for l in new_lines])
+                child_nodes.append(node)
+
+    return ParentNode("div", child_nodes)
+
+
+def text_to_children(text: str) -> list[ParentNode | LeafNode]:
+    text_nodes = text_to_textnodes(text)
+    html_nodes: list[ParentNode | LeafNode] = list(
+        map(text_node_to_html_node, text_nodes)
+    )
+    return html_nodes

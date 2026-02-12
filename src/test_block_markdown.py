@@ -1,6 +1,6 @@
 import unittest
 
-from block_markdown import markdown_to_blocks, block_to_block_type, BlockType
+from block_markdown import markdown_to_blocks, block_to_block_type, BlockType, markdown_to_html_node
 
 
 class TestMarkdownToBlocks(unittest.TestCase):
@@ -90,6 +90,82 @@ class TestBlockToBlockType(unittest.TestCase):
     def test_paragraph(self):
         self.assertEqual(block_to_block_type(
             "just some text"), BlockType.PARAGRAPH)
+
+
+class TestMarkdownToHTMLNode(unittest.TestCase):
+    # paragraph
+    def test_paragraph(self):
+        result = markdown_to_html_node("hello world").to_html()
+        self.assertEqual(result, "<div><p>hello world</p></div>")
+
+    def test_paragraph_with_inline(self):
+        result = markdown_to_html_node("hello **bold** world").to_html()
+        self.assertEqual(result, "<div><p>hello <b>bold</b> world</p></div>")
+
+    # headings
+    def test_heading_h1(self):
+        result = markdown_to_html_node("# Hello").to_html()
+        self.assertEqual(result, "<div><h1>Hello</h1></div>")
+
+    def test_heading_h3(self):
+        result = markdown_to_html_node("### Hello").to_html()
+        self.assertEqual(result, "<div><h3>Hello</h3></div>")
+
+    def test_heading_h6(self):
+        result = markdown_to_html_node("###### Hello").to_html()
+        self.assertEqual(result, "<div><h6>Hello</h6></div>")
+
+    def test_heading_with_inline(self):
+        result = markdown_to_html_node("# Hello **bold**").to_html()
+        self.assertEqual(result, "<div><h1>Hello <b>bold</b></h1></div>")
+
+    # code
+    def test_code_block(self):
+        result = markdown_to_html_node("```\nprint('hi')\n```").to_html()
+        self.assertEqual(
+            result, "<div><pre><code>print('hi')</code></pre></div>")
+
+    # quote
+    def test_quote(self):
+        result = markdown_to_html_node(">hello world").to_html()
+        self.assertEqual(
+            result, "<div><blockquote>hello world</blockquote></div>")
+
+    def test_quote_multiline(self):
+        result = markdown_to_html_node(">line one\n>line two").to_html()
+        self.assertEqual(
+            result, "<div><blockquote>line one\nline two</blockquote></div>")
+
+    # ordered list
+    def test_ordered_list(self):
+        result = markdown_to_html_node("1. first\n2. second").to_html()
+        self.assertEqual(
+            result, "<div><ol><li>first</li><li>second</li></ol></div>")
+
+    def test_ordered_list_with_inline(self):
+        result = markdown_to_html_node("1. **bold**\n2. _italic_").to_html()
+        self.assertEqual(
+            result, "<div><ol><li><b>bold</b></li><li><i>italic</i></li></ol></div>")
+
+    # unordered list
+    def test_unordered_list(self):
+        result = markdown_to_html_node("- first\n- second").to_html()
+        self.assertEqual(
+            result, "<div><ul><li>first</li><li>second</li></ul></div>")
+
+    def test_unordered_list_with_inline(self):
+        result = markdown_to_html_node("- **bold**\n- _italic_").to_html()
+        self.assertEqual(
+            result, "<div><ul><li><b>bold</b></li><li><i>italic</i></li></ul></div>")
+
+    # multiple blocks
+    def test_multiple_blocks(self):
+        md = "# Heading\n\nparagraph\n\n- one\n- two"
+        result = markdown_to_html_node(md).to_html()
+        self.assertEqual(
+            result,
+            "<div><h1>Heading</h1><p>paragraph</p><ul><li>one</li><li>two</li></ul></div>"
+        )
 
 
 if __name__ == "__main__":
