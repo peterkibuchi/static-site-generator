@@ -1,14 +1,19 @@
-from textnode import TextNode, TextType
-from inline_markdown import split_nodes_image
+import os
+import shutil
+
+from file_operations import copy_files_recursive
+
+dir_path_static = "./static"
+dir_path_public = "./public"
 
 
 def main():
-    node = TextNode(
-        "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png) and another ![second image](https://i.imgur.com/3elNhQu.png)",
-        TextType.TEXT,
-    )
-    print(f"split_nodes_image node:", node)
-    print(f"split_nodes_image result:", split_nodes_image([node]))
+    print("Deleting public directory...")
+    if os.path.exists(dir_path_public):
+        shutil.rmtree(dir_path_public)
+
+    print("Copying static files to public directory...")
+    copy_files_recursive(dir_path_static, dir_path_public)
 
 
 if __name__ == "__main__":
