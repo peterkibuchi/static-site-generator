@@ -5,7 +5,7 @@ import sys
 from file_operations import copy_files_recursive, generate_pages_recursive
 
 dir_path_static = "./static"
-dir_path_public = "./docs"
+dir_path_public = "./docs"  # use "./public" for local testing
 dir_path_content = "./content"
 template_path = "./template.html"
 
