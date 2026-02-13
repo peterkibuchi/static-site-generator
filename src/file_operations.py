@@ -63,3 +63,19 @@ def generate_page(src_path: str, template_path: str, dest_path: str):
 
     with open(dest_path, "w") as dest_file:
         dest_file.write(final)
+
+
+# Recursively walks the content directory, converting each .md file
+# to an HTML page using the template, mirroring the directory structure in dest.
+def generate_pages_recursive(dir_path_content: str, template_path: str, dest_dir_path: str):
+    for path in os.listdir(dir_path_content):
+        src_path = os.path.join(dir_path_content, path)
+        # Swap .md extension to .html for the output filename
+        if path.endswith(".md"):
+            path = path.removesuffix(".md") + ".html"
+        dest_path = os.path.join(dest_dir_path, path)
+
+        if os.path.isfile(src_path):
+            generate_page(src_path, template_path, dest_path)
+        elif os.path.isdir(src_path):
+            generate_pages_recursive(src_path, template_path, dest_path)
